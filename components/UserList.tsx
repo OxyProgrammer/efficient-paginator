@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { FcPrevious } from 'react-icons/fc';
 import { FcNext } from 'react-icons/fc';
-import EfficientPaginator from '@/utils/UserPaginator';
+import EfficientPaginator from '@/utils/EfficientPaginator';
 import { User } from '@/types/User';
 
 const UserList = () => {
