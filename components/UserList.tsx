@@ -2,28 +2,43 @@
 import { useState, useEffect } from 'react';
 import { FcPrevious } from 'react-icons/fc';
 import { FcNext } from 'react-icons/fc';
-import EfficientPaginator from '@/utils/EfficientPaginator';
+import EfficientPaginator, { Direction } from '@/utils/EfficientPaginator';
 import { User } from '@/types/User';
+import PageSizeSelector from './PageSizeSelector';
+import { fetchUsers } from '@/actions';
 
 const UserList = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [paginator] = useState(() => new EfficientPaginator(10));
+  const [paginator, setPaginator] = useState(
+    () => new EfficientPaginator<User>(5, fetchUsers)
+  );
+  const [pageSize, setPageSize] = useState<number>(5);
 
-  const loadUsers = async (direction: 'next' | 'prev') => {
+  useEffect(() => {
+    loadUsers(Direction.Next);
+  }, []);
+
+  useEffect(() => {
+    setPaginator(new EfficientPaginator<User>(pageSize, fetchUsers));
+    loadUsers(Direction.Next);
+  }, [pageSize]);
+
+  const loadUsers = async (direction: Direction) => {
     setLoading(true);
-    const newUsers = await paginator.getUsers(direction);
+    const newUsers = await paginator.getItems(direction);
     setUsers(newUsers);
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadUsers('next');
-  }, []);
-  
+  const handlePageSizeChange = (pageSize: number) => {
+    setPageSize(pageSize);
+  };
+
   return (
     <div className='min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-3xl mx-auto'>
+        <PageSizeSelector onPageSizeChange={handlePageSizeChange} />
         <div className='bg-white shadow overflow-hidden sm:rounded-md'>
           <ul className='divide-y divide-gray-200'>
             {users.map((user) => (
@@ -44,7 +59,7 @@ const UserList = () => {
         </div>
         <div className='mt-4 flex justify-between'>
           <button
-            onClick={() => loadUsers('prev')}
+            onClick={() => loadUsers(Direction.Previous)}
             disabled={!paginator.hasPrevious() || loading}
             className='inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'
           >
@@ -52,7 +67,7 @@ const UserList = () => {
             Previous
           </button>
           <button
-            onClick={() => loadUsers('next')}
+            onClick={() => loadUsers(Direction.Next)}
             disabled={!paginator.hasNext() || loading}
             className='inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'
           >

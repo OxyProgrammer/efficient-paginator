@@ -1,23 +1,33 @@
-import { FetchUserResponse, User } from '../types/User';
-import { fetchUsers } from '../actions';
+import {
+  FetchFunction,
+  FetchResponse,
+} from '../types/User';
 
-export default class EfficientPaginator {
+export enum Direction {
+  Next,
+  Previous,
+}
+
+export default class EfficientPaginator<T> {
   private currentPage: number;
   private pageSize: number;
   private hasMore: boolean;
-  private cache: Map<number, FetchUserResponse>;
+  private cache: Map<number, FetchResponse<T>>;
 
-  constructor(pageSize: number) {
+  private fetchFunction: FetchFunction<T>;
+
+  constructor(pageSize: number, fetchFunction: FetchFunction<T>) {
     this.currentPage = 0;
     this.pageSize = pageSize;
     this.hasMore = true;
     this.cache = new Map();
+    this.fetchFunction = fetchFunction; // Assign the fetch function
   }
 
-  async getUsers(direction: 'next' | 'prev'): Promise<User[]> {
-    if (direction === 'next') {
+  async getItems(direction: Direction): Promise<T[]> {
+    if (direction === Direction.Next) {
       this.currentPage++;
-    } else if (direction === 'prev' && this.currentPage > 1) {
+    } else if (direction === Direction.Previous && this.currentPage > 1) {
       this.currentPage--;
     }
 
@@ -26,13 +36,17 @@ export default class EfficientPaginator {
       this.hasMore = cacheEntry.hasMore;
       return cacheEntry.users;
     }
+
     try {
-      const response = await fetchUsers(this.currentPage, this.pageSize);
+      const response = await this.fetchFunction(
+        this.currentPage,
+        this.pageSize
+      );
       this.cache.set(this.currentPage, response);
       this.hasMore = response.hasMore;
       return response.users;
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching items:', error);
       return [];
     }
   }
@@ -47,5 +61,9 @@ export default class EfficientPaginator {
 
   getCurrentPage(): number {
     return this.currentPage;
+  }
+
+  getPageSize(): number {
+    return this.pageSize;
   }
 }

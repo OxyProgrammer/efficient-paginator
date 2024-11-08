@@ -4,7 +4,11 @@ export interface User {
   email: string;
 }
 
-export interface FetchUserResponse {
-  users: User[];
+export interface FetchResponse<T> {
+  users: T[];
   hasMore: boolean;
+}
+
+export interface FetchFunction<T> {
+  (page: number, pageSize: number): Promise<FetchResponse<T>>;
 }
