@@ -10,25 +10,30 @@ import { fetchUsers } from '@/actions';
 const UserList = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [paginator, setPaginator] = useState(
+  const [paginator, setPaginator] = useState<EfficientPaginator<User>>(
     () => new EfficientPaginator<User>(5, fetchUsers)
   );
   const [pageSize, setPageSize] = useState<number>(5);
 
   useEffect(() => {
-    loadUsers(Direction.Next);
-  }, []);
+    const newPaginator = new EfficientPaginator<User>(pageSize, fetchUsers);
+    setPaginator(newPaginator);
+  }, [pageSize]);
 
   useEffect(() => {
-    setPaginator(new EfficientPaginator<User>(pageSize, fetchUsers));
     loadUsers(Direction.Next);
-  }, [pageSize]);
+  }, [paginator]);
 
   const loadUsers = async (direction: Direction) => {
     setLoading(true);
-    const newUsers = await paginator.getItems(direction);
-    setUsers(newUsers);
-    setLoading(false);
+    try {
+      const newUsers = await paginator.getItems(direction);
+      setUsers(newUsers);
+    } catch (error) {
+      console.error('Failed to load users: ', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePageSizeChange = (pageSize: number) => {

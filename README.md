@@ -9,6 +9,11 @@ Welcome to the Client-Side Paginator project! This application demonstrates an e
 - **Client-Side Caching**: Speed up data access using caching mechanisms.
 - **Separation of Concerns**: Clean and organized code structure for better maintainability.
 
+## 👁️🖥️ How it looks?
+
+<img width='full' src="resources/efficient-paginator.gif" alt="Screen Demo" />
+
+
 ## 🛠️ Getting Started
 
 Follow these steps to set up and run the project locally! 🔧
